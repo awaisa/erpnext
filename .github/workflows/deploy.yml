@@ -1,0 +1,44 @@
+name: Deploy ERPNext to Azure VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Install sshpass
+      - name: Install sshpass
+        run: |
+          sudo apt update
+          sudo apt install -y sshpass
+
+      # Step 3: Copy Files to Azure VM using sshpass
+      - name: Deploy Files to Azure VM
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r ./* azureuser@your-vm-ip:/home/azureuser/erpnext
+
+      # Step 4: Execute Commands on Azure VM using sshpass
+      - name: Configure ERPNext on Azure VM
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no azureuser@your-vm-ip << 'EOF'
+          cd /home/azureuser/erpnext
+          sudo apt update
+          sudo bench init erpnext-bench --frappe-branch version-14
+          cd erpnext-bench
+          bench get-app erpnext --branch version-14
+          bench new-site erp.local
+          bench install-app erpnext
+          sudo bench start
+          EOF
