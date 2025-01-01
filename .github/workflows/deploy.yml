@@ -25,15 +25,15 @@ jobs:
         env:
           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
         run: |
-          sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r ./* azureuser@your-vm-ip:/home/azureuser/erpnext
+          sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r ./* erpnadmin@your-vm-ip:/home/erpnadmin/erpnext
 
       # Step 4: Execute Commands on Azure VM using sshpass
       - name: Configure ERPNext on Azure VM
         env:
           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
         run: |
-          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no azureuser@your-vm-ip << 'EOF'
-          cd /home/azureuser/erpnext
+          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no erpnadmin@your-vm-ip << 'EOF'
+          cd /home/erpnadmin/erpnext
           sudo apt update
           sudo bench init erpnext-bench --frappe-branch version-14
           cd erpnext-bench
